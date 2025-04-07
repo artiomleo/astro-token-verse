@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 
 // Types for our cryptocurrency data
@@ -95,11 +94,37 @@ export const fetchCryptocurrencyBySlug = async (slug: string): Promise<Cryptocur
   }
 };
 
-// Historical price data from CoinGecko
-export const fetchHistoricalPriceData = async (slug: string): Promise<{date: string, price: number}[]> => {
+// Historical price data from CoinGecko with period parameter
+export const fetchHistoricalPriceData = async (
+  slug: string, 
+  period: '1D' | '7D' | '30D' | '90D' | '1Y' | 'ALL' = '30D'
+): Promise<{date: string, price: number}[]> => {
   try {
+    // Map UI period options to API parameters
+    const daysMap = {
+      '1D': 1,
+      '7D': 7,
+      '30D': 30,
+      '90D': 90,
+      '1Y': 365,
+      'ALL': 'max'
+    };
+    
+    // Determine the appropriate interval based on period
+    const intervalMap = {
+      '1D': 'hourly',
+      '7D': 'daily',
+      '30D': 'daily',
+      '90D': 'daily',
+      '1Y': 'daily',
+      'ALL': 'weekly'
+    };
+    
+    const days = daysMap[period];
+    const interval = intervalMap[period];
+    
     const response = await fetch(
-      `https://api.coingecko.com/api/v3/coins/${slug}/market_chart?vs_currency=usd&days=30&interval=daily`
+      `https://api.coingecko.com/api/v3/coins/${slug}/market_chart?vs_currency=usd&days=${days}&interval=${interval}`
     );
     
     if (!response.ok) {
@@ -121,15 +146,37 @@ export const fetchHistoricalPriceData = async (slug: string): Promise<{date: str
     // Fall back to mock data generation in case of error
     const basePrice = sampleCryptos.find(c => c.slug === slug)?.price || 100;
     
-    const dates = Array.from({length: 30}, (_, i) => {
+    // Generate appropriate number of data points based on period
+    const dataPointsCount = {
+      '1D': 24,
+      '7D': 7,
+      '30D': 30,
+      '90D': 90,
+      '1Y': 52,
+      'ALL': 200
+    }[period];
+    
+    // Generate dates based on the period
+    const dates = Array.from({length: dataPointsCount || 30}, (_, i) => {
       const date = new Date();
-      date.setDate(date.getDate() - (29 - i));
-      return date.toISOString().split('T')[0];
+      
+      if (period === '1D') {
+        // For 1D, go back by hours
+        date.setHours(date.getHours() - (dataPointsCount - 1 - i));
+      } else {
+        // For other periods, go back by days
+        date.setDate(date.getDate() - (dataPointsCount - 1 - i));
+      }
+      
+      return period === '1D' 
+        ? date.toISOString() // Keep time for 1D
+        : date.toISOString().split('T')[0]; // Just date for other periods
     });
     
+    // Generate mock price data
     return dates.map((date, i) => {
       const randomFactor = 0.9 + (Math.random() * 0.2);
-      const trendFactor = 1 + (i / 100);
+      const trendFactor = 1 + (i / (dataPointsCount || 30) * (Math.random() > 0.5 ? 0.3 : 0.05));
       const price = basePrice * randomFactor * trendFactor;
       
       return { date, price };

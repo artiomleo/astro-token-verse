@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { 
@@ -14,6 +15,8 @@ import TokenStat from '../components/TokenStat';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Toggle } from '@/components/ui/toggle';
 import { 
   ArrowLeft, 
   TrendingUp, 
@@ -30,9 +33,12 @@ import {
   BookmarkX
 } from 'lucide-react';
 
+type ChartPeriod = '1D' | '7D' | '30D' | '90D' | '1Y' | 'ALL';
+
 const TokenDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const { isInWatchlist, addToWatchlist, removeFromWatchlist } = useWatchlist();
+  const [chartPeriod, setChartPeriod] = useState<ChartPeriod>('30D');
   
   const { data: token, isLoading: isLoadingToken } = useQuery({
     queryKey: ['cryptocurrency', slug],
@@ -41,8 +47,8 @@ const TokenDetail = () => {
   });
   
   const { data: priceData, isLoading: isLoadingPriceData } = useQuery({
-    queryKey: ['historicalPriceData', slug],
-    queryFn: () => fetchHistoricalPriceData(slug || ''),
+    queryKey: ['historicalPriceData', slug, chartPeriod],
+    queryFn: () => fetchHistoricalPriceData(slug || '', chartPeriod),
     enabled: !!slug,
   });
   
@@ -201,30 +207,32 @@ const TokenDetail = () => {
         <div className="glass-panel p-6 mb-8">
           <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
             <Activity className="h-5 w-5 text-glow-purple" />
-            Price Chart (30 Days)
+            Price Chart ({chartPeriod})
           </h2>
           
-          {priceData && <PriceChart data={priceData} color={isPositiveChange ? "#0BFFCF" : "#ef4444"} />}
+          {priceData && 
+            <PriceChart 
+              data={priceData} 
+              color={isPositiveChange ? "#0BFFCF" : "#ef4444"} 
+              period={chartPeriod}
+            />
+          }
           
           <div className="flex flex-wrap gap-2 mt-4 justify-end">
-            <button className="px-3 py-1 bg-space-light rounded-full text-white/70 text-sm hover:bg-glow-cyan/20 transition-colors">
-              1D
-            </button>
-            <button className="px-3 py-1 bg-space-light rounded-full text-white/70 text-sm hover:bg-glow-cyan/20 transition-colors">
-              7D
-            </button>
-            <button className="px-3 py-1 bg-glow-cyan/20 rounded-full text-glow-cyan text-sm">
-              30D
-            </button>
-            <button className="px-3 py-1 bg-space-light rounded-full text-white/70 text-sm hover:bg-glow-cyan/20 transition-colors">
-              90D
-            </button>
-            <button className="px-3 py-1 bg-space-light rounded-full text-white/70 text-sm hover:bg-glow-cyan/20 transition-colors">
-              1Y
-            </button>
-            <button className="px-3 py-1 bg-space-light rounded-full text-white/70 text-sm hover:bg-glow-cyan/20 transition-colors">
-              ALL
-            </button>
+            {(['1D', '7D', '30D', '90D', '1Y', 'ALL'] as ChartPeriod[]).map((period) => (
+              <Toggle
+                key={period}
+                pressed={chartPeriod === period}
+                onPressedChange={() => setChartPeriod(period)}
+                className={`px-3 py-1 rounded-full text-sm ${
+                  chartPeriod === period
+                    ? 'bg-glow-cyan/20 text-glow-cyan'
+                    : 'bg-space-light text-white/70 hover:bg-glow-cyan/20'
+                } transition-colors`}
+              >
+                {period}
+              </Toggle>
+            ))}
           </div>
         </div>
         

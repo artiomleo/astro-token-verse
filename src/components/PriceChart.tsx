@@ -5,6 +5,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 interface PriceChartProps {
   data: { date: string; price: number }[];
   color?: string;
+  period?: '1D' | '7D' | '30D' | '90D' | '1Y' | 'ALL';
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -20,9 +21,39 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const PriceChart: React.FC<PriceChartProps> = ({ data, color = "#0BFFCF" }) => {
+const PriceChart: React.FC<PriceChartProps> = ({ 
+  data, 
+  color = "#0BFFCF",
+  period = '30D'
+}) => {
   const minPrice = Math.min(...data.map(item => item.price)) * 0.95;
   const maxPrice = Math.max(...data.map(item => item.price)) * 1.05;
+
+  // Customize X-axis tick formatting based on the period
+  const getTickFormatter = () => {
+    switch(period) {
+      case '1D':
+        // For 1 day, show hours
+        return (tick: string) => {
+          const date = new Date(tick);
+          return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        };
+      case '7D':
+      case '30D':
+        // For 7 and 30 days, show month/day
+        return (tick: string) => tick.substring(5);
+      case '90D':
+      case '1Y':
+      case 'ALL':
+        // For longer periods, show just month/year
+        return (tick: string) => {
+          const parts = tick.split('-');
+          return `${parts[1]}/${parts[0].substring(2)}`;
+        };
+      default:
+        return (tick: string) => tick.substring(5);
+    }
+  };
 
   return (
     <div className="w-full h-[300px] mt-4">
@@ -46,7 +77,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ data, color = "#0BFFCF" }) => {
           <XAxis 
             dataKey="date" 
             stroke="rgba(255,255,255,0.5)"
-            tickFormatter={(tick) => tick.substring(5)}
+            tickFormatter={getTickFormatter()}
             tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12 }}
           />
           <YAxis 
