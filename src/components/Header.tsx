@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Search, Zap, BookmarkCheck } from 'lucide-react';
 import { 
@@ -11,9 +11,11 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle
 } from '@/components/ui/navigation-menu';
+import SearchDialog from './SearchDialog';
 
 const Header = () => {
   const location = useLocation();
+  const [searchOpen, setSearchOpen] = useState(false);
   
   return (
     <header className="glass-panel mb-8">
@@ -41,13 +43,14 @@ const Header = () => {
               </NavigationMenuList>
             </NavigationMenu>
 
-            <div className="relative w-full sm:w-64">
-              <input
-                type="text"
-                placeholder="Search tokens..."
-                className="w-full bg-space/60 rounded-lg border border-glow-purple/30 py-2 px-4 pr-10 text-white placeholder-white/50 focus:outline-none focus:border-glow-cyan focus:ring-1 focus:ring-glow-cyan"
-              />
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 h-5 w-5" />
+            <div 
+              className="relative w-full sm:w-64 cursor-pointer" 
+              onClick={() => setSearchOpen(true)}
+            >
+              <div className="w-full bg-space/60 rounded-lg border border-glow-purple/30 py-2 px-4 pr-10 text-white placeholder-white/50 focus:outline-none focus:border-glow-cyan focus:ring-1 focus:ring-glow-cyan flex items-center">
+                <Search className="h-5 w-5 text-white/50 mr-2" />
+                <span className="text-white/50">Search tokens...</span>
+              </div>
             </div>
             
             <a href="https://www.coingecko.com" target="_blank" rel="noopener noreferrer" className="futuristic-button hidden sm:block">
@@ -67,6 +70,8 @@ const Header = () => {
           </Link>
         </div>
       </div>
+      
+      <SearchDialog open={searchOpen} setOpen={setSearchOpen} />
     </header>
   );
 };

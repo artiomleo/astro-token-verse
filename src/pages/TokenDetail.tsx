@@ -67,6 +67,52 @@ const TokenDetail = () => {
       });
     }
   };
+
+  const handleShare = () => {
+    if (!token) return;
+    
+    if (navigator.share) {
+      navigator.share({
+        title: `${token.name} (${token.symbol}) - AstroToken Verse`,
+        text: `Check out ${token.name} price: ${formatCurrency(token.price)} | 24h change: ${token.percentChange24h.toFixed(2)}%`,
+        url: window.location.href,
+      })
+      .then(() => {
+        toast({
+          title: "Shared successfully",
+          description: `You've shared ${token.name} with others`,
+          variant: "default",
+        });
+      })
+      .catch((error) => {
+        console.error('Error sharing:', error);
+        handleFallbackShare();
+      });
+    } else {
+      handleFallbackShare();
+    }
+  };
+  
+  const handleFallbackShare = () => {
+    if (!token) return;
+    
+    navigator.clipboard.writeText(window.location.href)
+      .then(() => {
+        toast({
+          title: "Link copied to clipboard",
+          description: `Share this link with others to view ${token.name}`,
+          variant: "default",
+        });
+      })
+      .catch((error) => {
+        console.error('Error copying to clipboard:', error);
+        toast({
+          title: "Unable to copy link",
+          description: "Please manually copy the URL from your browser",
+          variant: "destructive",
+        });
+      });
+  };
   
   if (isLoading) {
     return (
@@ -107,7 +153,7 @@ const TokenDetail = () => {
     );
   }
   
-  const isPositiveChange = token.percentChange24h >= 0;
+  const isPositiveChange = token?.percentChange24h >= 0;
   const isTokenInWatchlist = slug ? isInWatchlist(slug) : false;
   
   return (
@@ -255,7 +301,10 @@ const TokenDetail = () => {
                   )}
                 </Button>
                 
-                <button className="w-full py-3 bg-space-light rounded-lg text-white hover:bg-space hover:shadow-glow-purple transition-all flex items-center justify-center gap-2">
+                <button 
+                  className="w-full py-3 bg-space-light rounded-lg text-white hover:bg-space hover:shadow-glow-purple transition-all flex items-center justify-center gap-2"
+                  onClick={handleShare}
+                >
                   <Share2 className="h-5 w-5" />
                   Share
                 </button>
