@@ -45,7 +45,7 @@
   body {
     @apply bg-space-dark text-foreground;
     background-image: linear-gradient(to bottom, var(--tw-gradient-stops));
-    @apply bg-gradient-from-space bg-gradient-to-space-dark;
+    @apply from-space to-space-dark bg-gradient-to-b;
     @apply bg-cyberpunk-grid;
     background-attachment: fixed;
   }
