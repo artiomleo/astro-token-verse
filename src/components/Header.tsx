@@ -23,8 +23,8 @@ const Header = () => {
               <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 h-5 w-5" />
             </div>
             
-            <a href="https://coinmarketcap.com" target="_blank" rel="noopener noreferrer" className="futuristic-button hidden sm:block">
-              CMC Source
+            <a href="https://www.coingecko.com" target="_blank" rel="noopener noreferrer" className="futuristic-button hidden sm:block">
+              Data: CoinGecko
             </a>
           </div>
         </div>
