@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -8,10 +7,13 @@ import {
   formatCurrency, 
   formatNumber 
 } from '../services/cryptoService';
+import { useWatchlist } from '../contexts/WatchlistContext';
 import Header from '../components/Header';
 import PriceChart from '../components/PriceChart';
 import TokenStat from '../components/TokenStat';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { toast } from '@/hooks/use-toast';
 import { 
   ArrowLeft, 
   TrendingUp, 
@@ -22,11 +24,15 @@ import {
   Activity, 
   Layers, 
   Star, 
-  Share2 
+  Share2,
+  BookmarkPlus,
+  BookmarkCheck,
+  BookmarkX
 } from 'lucide-react';
 
 const TokenDetail = () => {
   const { slug } = useParams<{ slug: string }>();
+  const { isInWatchlist, addToWatchlist, removeFromWatchlist } = useWatchlist();
   
   const { data: token, isLoading: isLoadingToken } = useQuery({
     queryKey: ['cryptocurrency', slug],
@@ -41,6 +47,26 @@ const TokenDetail = () => {
   });
   
   const isLoading = isLoadingToken || isLoadingPriceData;
+  
+  const handleWatchlistToggle = () => {
+    if (!slug) return;
+    
+    if (isInWatchlist(slug)) {
+      removeFromWatchlist(slug);
+      toast({
+        title: "Removed from watchlist",
+        description: `${token?.name || 'Token'} has been removed from your watchlist`,
+        variant: "default",
+      });
+    } else {
+      addToWatchlist(slug);
+      toast({
+        title: "Added to watchlist",
+        description: `${token?.name || 'Token'} has been added to your watchlist`,
+        variant: "default",
+      });
+    }
+  };
   
   if (isLoading) {
     return (
@@ -82,6 +108,7 @@ const TokenDetail = () => {
   }
   
   const isPositiveChange = token.percentChange24h >= 0;
+  const isTokenInWatchlist = slug ? isInWatchlist(slug) : false;
   
   return (
     <div className="min-h-screen pb-12">
@@ -209,10 +236,24 @@ const TokenDetail = () => {
               </h2>
               
               <div className="flex flex-col gap-4">
-                <button className="futuristic-button w-full py-3 flex items-center justify-center gap-2">
-                  <Star className="h-5 w-5" />
-                  Add to Watchlist
-                </button>
+                <Button 
+                  onClick={handleWatchlistToggle}
+                  className={`w-full py-3 flex items-center justify-center gap-2 ${
+                    isTokenInWatchlist ? 'bg-glow-purple hover:bg-glow-purple/80' : 'futuristic-button'
+                  }`}
+                >
+                  {isTokenInWatchlist ? (
+                    <>
+                      <BookmarkCheck className="h-5 w-5" />
+                      Remove from Watchlist
+                    </>
+                  ) : (
+                    <>
+                      <BookmarkPlus className="h-5 w-5" />
+                      Add to Watchlist
+                    </>
+                  )}
+                </Button>
                 
                 <button className="w-full py-3 bg-space-light rounded-lg text-white hover:bg-space hover:shadow-glow-purple transition-all flex items-center justify-center gap-2">
                   <Share2 className="h-5 w-5" />

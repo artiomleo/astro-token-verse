@@ -1,9 +1,20 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Search, Zap } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Search, Zap, BookmarkCheck } from 'lucide-react';
+import { 
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle
+} from '@/components/ui/navigation-menu';
 
 const Header = () => {
+  const location = useLocation();
+  
   return (
     <header className="glass-panel mb-8">
       <div className="container mx-auto px-4 py-4">
@@ -14,6 +25,22 @@ const Header = () => {
           </Link>
           
           <div className="flex w-full sm:w-auto gap-4 items-center">
+            <NavigationMenu className="hidden sm:block">
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <Link to="/" className={`${navigationMenuTriggerStyle()} ${location.pathname === '/' ? 'bg-accent/50' : ''}`}>
+                    Home
+                  </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Link to="/watchlist" className={`${navigationMenuTriggerStyle()} ${location.pathname === '/watchlist' ? 'bg-accent/50' : ''} flex items-center gap-2`}>
+                    <BookmarkCheck className="h-4 w-4" />
+                    Watchlist
+                  </Link>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
+
             <div className="relative w-full sm:w-64">
               <input
                 type="text"
@@ -27,6 +54,17 @@ const Header = () => {
               Data: CoinGecko
             </a>
           </div>
+        </div>
+        
+        {/* Mobile navigation */}
+        <div className="sm:hidden flex justify-center mt-4 border-t border-white/10 pt-4">
+          <Link to="/" className={`px-4 py-2 ${location.pathname === '/' ? 'text-glow-cyan' : 'text-white/70'}`}>
+            Home
+          </Link>
+          <Link to="/watchlist" className={`px-4 py-2 flex items-center gap-1 ${location.pathname === '/watchlist' ? 'text-glow-cyan' : 'text-white/70'}`}>
+            <BookmarkCheck className="h-4 w-4" />
+            Watchlist
+          </Link>
         </div>
       </div>
     </header>
